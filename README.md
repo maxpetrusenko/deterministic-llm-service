@@ -1,5 +1,9 @@
 # deterministic-llm-service
 
+[![CI](https://github.com/maxpetrusenko/deterministic-llm-service/workflows/CI/badge.svg)](https://github.com/maxpetrusenko/deterministic-llm-service/actions)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.7-blue)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green)](https://nodejs.org/)
+
 > Production-grade HTTP gateway for LLM providers with reliability controls
 
 Fastify-based TypeScript service providing a unified interface for OpenAI and Anthropic with:
@@ -11,6 +15,7 @@ Fastify-based TypeScript service providing a unified interface for OpenAI and An
 - 📊 Pino structured logging
 - ✅ Zod schema validation
 - 🛡️ Configurable timeouts
+- 📖 OpenAPI 3.0 spec
 
 ## Quick Start
 
@@ -68,6 +73,72 @@ curl -X POST http://localhost:3000/v1/chat/completions \
    Logging           Circuit Breaker
                      Retries
 ```
+
+## API Documentation
+
+See [openapi.yaml](./openapi.yaml) for the full OpenAPI 3.0 specification.
+
+### Endpoints
+
+| Method | Path | Description |
+|--------|------|-------------|
+| GET | `/health` | Health check |
+| POST | `/v1/chat/completions` | Create chat completion |
+
+### Response Headers
+
+All responses include:
+- `X-Request-Id`: Unique request identifier for tracing
+- `X-RateLimit-Limit`: Requests per rate limit window
+- `X-RateLimit-Remaining`: Remaining requests in current window
+- `X-RateLimit-Reset`: ISO timestamp when rate limit resets
+- `X-Cached`: `true` if response was served from idempotency cache
+
+## Testing
+
+```bash
+# Run all tests
+npm test
+
+# Run with coverage
+npm run test:coverage
+
+# Type check
+npm run typecheck
+
+# Run specific test suites
+npm test -- chaos
+npm test -- benchmark
+```
+
+### Test Suites
+
+- **Unit tests**: Provider mocks, retry logic, circuit breaker, rate limiter, idempotency cache, schema validation
+- **Integration tests**: End-to-end API tests
+- **Chaos tests**: Malformed input, rate limiting, idempotency behavior
+- **Benchmarks**: Latency percentiles (p50/p95/p99) under load
+
+## Reliability Features
+
+### Retries
+- Exponential backoff with configurable max attempts
+- Smart retry detection (429, 5xx errors)
+- Configurable initial delay and max delay
+
+### Circuit Breaker
+- Automatic circuit opening after error threshold
+- Half-open state for recovery testing
+- Fallback responses when circuit is open
+
+### Rate Limiting
+- Per-IP sliding window rate limiting
+- Configurable window size and request limit
+- Standard rate limit headers in responses
+
+### Idempotency
+- Cache responses by idempotency key
+- 1-hour TTL (configurable)
+- Prevents duplicate processing
 
 ## License
 
