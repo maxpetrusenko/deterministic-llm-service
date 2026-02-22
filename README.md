@@ -16,6 +16,8 @@ Fastify-based TypeScript service providing a unified interface for OpenAI and An
 - ✅ Zod schema validation
 - 🛡️ Configurable timeouts
 - 📖 OpenAPI 3.0 spec
+- 📈 **Prometheus metrics** - request latency, error rates, cache hit ratio
+- 🔄 **Request coalescing** - dedupe concurrent identical requests
 
 ## Quick Start
 
@@ -58,6 +60,23 @@ curl -X POST http://localhost:3000/v1/chat/completions \
 | `RATE_LIMIT_WINDOW_MS` | 60000 | Window duration |
 | `RETRY_MAX_ATTEMPTS` | 3 | Max retry attempts |
 | `IDEMPOTENCY_TTL_MS` | 3600000 | Cache TTL (1hr) |
+
+## Metrics
+
+Access Prometheus metrics at `/metrics`:
+
+```
+curl http://localhost:3000/metrics
+```
+
+Available metrics:
+- `llm_gateway_http_request_duration_seconds` - HTTP request latency histogram
+- `llm_gateway_http_requests_total` - Total HTTP requests counter
+- `llm_gateway_provider_latency_seconds` - LLM provider latency
+- `llm_gateway_tokens_total` - Token usage by provider/model
+- `llm_gateway_cache_hits_total` / `cache_misses_total` - Cache hit ratio
+- `llm_gateway_circuit_breaker_state` - Circuit breaker state gauge
+- `llm_gateway_rate_limit_exceeded_total` - Rate limit events
 
 ## Architecture
 
